@@ -30,14 +30,29 @@ class DropBoxController {
       });
   
       this.inputFilesEl.addEventListener('change', (event) => {
-        this.uploadTask(event.target.files)
+        this.uploadTask(event.target.files).then(responses =>{
+            responses.forEach(resp=>{
+                console.log(resp.files['input-file']);
+                this.getFirebaseRef().push().set(resp.files['input-file']);
+                this.modalShow(false);
+
+            })
+        })
         this.modalShow();
         this.inputFilesEl.value = '';
   
       });
     }
+
+    uploadComplete(){
+        this.modalShow
+    }
+
+    getFirebaseRef(){
+        return firebase.database().ref('files');
+    }
     modalShow(){
-      this.snackModalEl.style.display = 'block';
+        this.snackModalEl.style.display ="block"
     }
     uploadTask(files) {
       let promises = [];
@@ -46,7 +61,6 @@ class DropBoxController {
           let ajax = new XMLHttpRequest();
           ajax.open('POST', '/upload')
           ajax.onload = event => {
-            this.modalShow(false)
             try {
               resolve(JSON.parse(ajax.responseText))
             } catch (e) {
@@ -54,7 +68,6 @@ class DropBoxController {
             }
           }
           ajax.onerror = event => {
-            this.modalShow(false)
             reject(event)
           }
           ajax.upload.onprogress = event =>{
@@ -79,20 +92,25 @@ class DropBoxController {
       this.timeleftEl.innerHTML = this.formatTimeToHuman(timeleft);
       
     }
-    formatTimeToHuman(duration){
-      let seconds = parseInt((duration / 1000) % 60);
-      let minutes = parseInt((duration / (1000) * 60)% 60);
-      let hours = parseInt((duration / (1000) * 60 * 60)% 24);
-      if (hours > 0){
-        return '${hours} horas, ${minutes} minutos e ${seconds} segundos';
-      }
-      if (minutes > 0){
-        return '${minutes} minutos e ${seconds} segundos';
-      }
-      if (seconds > 0){
-        return '${seconds} segundos';
-      }
-      return'';
+    formatTimeToHuman(duration) {
+        let seconds = parseInt((duration / 1000) % 60);
+        let minutes = parseInt((duration / (1000 * 60)) % 60);
+        let hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+    
+        if (hours > 0) {
+          return `${hours} horas, ${minutes} minutos e ${seconds} segundos`
+        }
+    
+        if (minutes > 0) {
+          return `${minutes} minutos e ${seconds} segundos`
+        }
+    
+        if (seconds > 0) {
+          return `${seconds} segundos`
+        }
+    
+        return '';
+      
     }
     getFileIconView(){
       switch(file.type){
